@@ -1,0 +1,11 @@
+{
+  "name": "FactorIO",
+  "version": "0.0.1",
+  "title": "Factor-I/O",
+  "author": "Reika",
+  "contact": "",
+  "homepage": "",
+  "factorio_version" : "0.16",
+  "description": "Adds sensors designed to read and send various signals which help in automation",
+  "dependencies": ["base >= 0.16.0"]
+}
