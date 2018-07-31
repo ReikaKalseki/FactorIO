@@ -10,6 +10,11 @@ function initGlobal(markDirty)
 	if not signals.combinators then
 		signals.combinators = {}
 	end
+	
+	for _,entry in pairs(signals.combinators) do
+		if not entry.data then entry.data = {} end
+	end
+	
 	signals.dirty = markDirty
 end
 

@@ -18,7 +18,7 @@ function getResearchProgress(entity)
 	return math.floor(force.research_progress*100 + 0.5)
 end
 
-function countLogiBots(entity, connection)
+function countLogiBots(entity, data, connection)
 	local network = connection.logistic_network
 	if network then
 		return network.all_logistic_robots
@@ -26,7 +26,7 @@ function countLogiBots(entity, connection)
 	return 0
 end
 
-function countConstrBots(entity, connection)
+function countConstrBots(entity, data, connection)
 	local network = connection.logistic_network
 	if network then
 		return network.all_construction_robots
@@ -34,31 +34,36 @@ function countConstrBots(entity, connection)
 	return 0
 end
 
-function getPowerProduction(entity, connection) --in kW
+function getPowerProduction(entity, data, connection) --in kW
+	local last = data.last_value and data.last_value or -1
 	local stats = connection.electric_network_statistics
 	local gen = 0
 	for k,amt in pairs(stats.input_counts) do
 		gen = gen+amt
 	end
-	return gen/1000
+	local diff = gen-last
+	data.last_value = gen
+	return last == -1 and 0 or diff/500
 end
 
-function getPowerConsumption(entity, connection) --in kW
+function getPowerConsumption(entity, data, connection) --in kW
+	local last = data.last_value and data.last_value or -1
 	local stats = connection.electric_network_statistics
 	local con = 0
 	for k,amt in pairs(stats.output_counts) do
-	--game.print(k .. ": " .. amt)
 		con = con+amt
 	end
-	return con/1000
+	local diff = con-last
+	data.last_value = con
+	return last == -1 and 0 or diff/500
 end
 
-function getFluidTemp(entity, connection)
+function getFluidTemp(entity, data, connection)
 	local fluid = connection.fluidbox[1]
 	return fluid and fluid.temperature or 0
 end
 
-function countEmptySlots(entity, connection)
+function countEmptySlots(entity, data, connection)
 	local inv = connection.get_inventory(defines.inventory.chest)
 	local ret = 0
 	for i = 1,#inv do
@@ -69,11 +74,11 @@ function countEmptySlots(entity, connection)
 	return ret
 end
 
-function runCallback(id, entity, connection)
+function runCallback(id, entity, data, connection)
 	local func = callbacks[id]
 	if func then
 		--game.print("Running callback for combinator " .. id)
-		return func(entity, connection)
+		return func(entity, data, connection)
 	else
 		game.print("Could not find callback for entity " .. entity.name .. ", ID = " .. id .. "!")
 		return 0

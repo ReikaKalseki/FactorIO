@@ -30,6 +30,24 @@ function getRampRate(id)
 	return ramps[id]
 end
 
+local function testIfEntityIsConnected(id, entity, wire, connection)
+	local net = entity.circuit_connected_entities
+	local clr = wire == defines.wire_type.red and "red" or "green"
+	local data = net[clr]
+	if data then
+		for _,val in pairs(data) do
+			if val == connection then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+local function testIfEntityIsStillConnected(entry)
+	return testIfEntityIsConnected(entry.id, entry.entity, entry.wire, entry.connection)
+end
+
 local function checkEntityConnections(id, entity, wire)
 	local net = entity.circuit_connected_entities
 	local clr = wire == defines.wire_type.red and "red" or "green"
@@ -63,10 +81,35 @@ local function findConnection(id, entity, wire)
 	return ret
 end
 
+local function setValue(entry, val)
+	local params = {
+		parameters = 
+		{
+			{
+				index = 1,
+				signal = {type = "virtual", name = entry.id},
+				count = val
+			}
+		}
+	}
+
+	entry.entity.get_control_behavior().parameters = params
+end
+
 function tickCombinator(entry, tick)
 	--game.print("Ticking " .. entry.id)
 	
 	if validation[entry.id] then --does it even need a connection?
+		if entry.connection then
+			if not entry.connection.valid then
+				entry.connection = nil
+			elseif tick%120 == 0 then
+				if not testIfEntityIsStillConnected(entry) then
+					entry.connection = nil
+				end
+			end
+		end
+	
 		if not (entry.connection and entry.connection.valid) and tick%120 == 0 then
 			local con, wire = findConnection(entry.id, entry.entity, entry.wire)
 			entry.connection = con
@@ -75,13 +118,19 @@ function tickCombinator(entry, tick)
 		
 		if not (entry.connection and entry.connection.valid) then
 			--game.print("No connection for " .. entry.id)
+			setValue(entry, 0)
 			return
 		end
 	end
 	
-	local val = runCallback(entry.id, entry.entity, entry.connection)
+	local val = runCallback(entry.id, entry.entity, entry.data, entry.connection)
 	
 	if not val then val = 0 end
+	
+	if val > 2^31-1 then
+		game.print("Sensor " .. entry.id .. " outputted a value of " .. val .. ", far more than is plausible or displayable!")
+		val = 2^31-1
+	end
 	
 	val = math.floor(val+0.5)
 	
@@ -95,18 +144,7 @@ function tickCombinator(entry, tick)
 		--game.print("Ramped " .. entry.id .. " tick rate from " .. old .. " to " .. entry.tick_rate)
 	end
 	
-	local params = {
-		parameters = 
-		{
-			{
-				index = 1,
-				signal = {type = "virtual", name = entry.id},
-				count = val
-			}
-		}
-	}
-
-	entry.entity.get_control_behavior().parameters = params
+	setValue(entry, val)
 end
 
 function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate)
