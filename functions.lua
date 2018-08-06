@@ -123,6 +123,8 @@ function tickCombinator(entry, tick)
 		end
 	end
 	
+	if not entry.data then entry.data = {} end
+	
 	local val = runCallback(entry.id, entry.entity, entry.data, entry.connection)
 	
 	if not val then val = 0 end
