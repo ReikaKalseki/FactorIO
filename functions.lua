@@ -132,6 +132,9 @@ function tickCombinator(entry, tick)
 	if val > 2^31-1 then
 		game.print("Sensor " .. entry.id .. " outputted a value of " .. val .. ", far more than is plausible or displayable!")
 		val = 2^31-1
+	elseif val < -(2^31-1) then
+		game.print("Sensor " .. entry.id .. " outputted a value of " .. val .. ", far less than is plausible or displayable!")
+		val = -(2^31-1)
 	end
 	
 	val = math.floor(val+0.5)
