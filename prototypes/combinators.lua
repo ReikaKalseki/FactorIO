@@ -10,5 +10,6 @@ addCombinator("power-production", getPowerProduction, isElectricPole, 30)
 addCombinator("power-consumption", getPowerConsumption, isElectricPole, 30)
 addCombinator("logi-bots", countLogiBots, isLogiChest, 30)
 addCombinator("constr-bots", countConstrBots, isLogiChest, 30)
+addCombinator("power-supply", powerSatisfaction, entityHasPower, 15)
 
 log("Registered combinators; maximum tick rate is " .. maximumTickRate)

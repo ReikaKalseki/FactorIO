@@ -2,7 +2,7 @@ require "config"
 
 local tech = table.deepcopy(data.raw.technology["circuit-network"])
 tech.name = "more-signals"
-tech.prerequisites = {"circuit-network", "advanced-electronics-2"}
+tech.prerequisites = {"circuit-network", "advanced-electronics"}
 tech.effects = {}
 tech.unit.count = math.floor(tech.unit.count*1.5)
 

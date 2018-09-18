@@ -1,5 +1,9 @@
 local callbacks = {}
 
+function powerSatisfaction(entity, data, connection)
+	return math.floor((100*connection.energy/connection.electric_buffer_size)+0.5)
+end
+
 function runTimer(entity)
 	return game.tick%60
 end

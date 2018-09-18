@@ -6,6 +6,10 @@ local ramps = {}
 
 maximumTickRate = 9999999
 
+function entityHasPower(entity)
+	return entity.electric_buffer_size and entity.electric_buffer_size > 0
+end
+
 function isElectricPole(entity)
 	return entity.type == "electric-pole"
 end
@@ -171,6 +175,8 @@ function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate)
 			{icon = entity.icon}, {icon = ico}
 		}
 		entity.localised_name = {"basic-combinator-name.name", {"signal-type." .. variant}}
+		entity.energy_source = {type = "electric", usage_priority = "secondary-input"}
+		entity.active_energy_usage = "4KW"
 		local item = table.deepcopy(data.raw.item["constant-combinator"])
 		item.name = name
 		item.icons = entity.icons
@@ -188,6 +194,7 @@ function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate)
 			icon_size = 32,
 			subgroup = "virtual-signal-special",
 			order = variant,
+			localised_name = {"signal-type." .. variant},
 		}
 		
 		data:extend({entity, item, recipe, signal})
