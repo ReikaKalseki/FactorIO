@@ -6,6 +6,6 @@
   "contact": "",
   "homepage": "",
   "factorio_version" : "0.16",
-  "description": "Adds sensors designed to read and send various signals which help in automation",
+  "description": "Adds sensors and actuators designed to read and send various signals which help in automation",
   "dependencies": ["base >= 0.16.0"]
 }

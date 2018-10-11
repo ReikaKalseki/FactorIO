@@ -11,5 +11,8 @@ addCombinator("power-consumption", getPowerConsumption, isElectricPole, 30)
 addCombinator("logi-bots", countLogiBots, isLogiChest, 30)
 addCombinator("constr-bots", countConstrBots, isLogiChest, 30)
 addCombinator("power-supply", powerSatisfaction, entityHasPower, 15)
+addMultiCombinator("train-status", {"moving-trains", "parked-trains", "waiting-trains", "lost-trains"}, trainStatus, nil, 90)
+
+addCombinator("inserter-filter", setInserterFilter, nil--[[isInserterOrLoader--]], 30, nil, true)
 
 log("Registered combinators; maximum tick rate is " .. maximumTickRate)

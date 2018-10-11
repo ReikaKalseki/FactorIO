@@ -1,5 +1,80 @@
 local callbacks = {}
 
+local function moveBox(area, dx, dy)
+	--printTable(area)
+	area.left_top.x = area.left_top.x+dx
+	area.left_top.y = area.left_top.y+dy
+	area.right_bottom.x = area.right_bottom.x+dx
+	area.right_bottom.y = area.right_bottom.y+dy
+	return area
+end
+
+local function moveBoxDirection(area, dir, dist)
+	if dir == defines.direction.north then
+		area = moveBox(area, 0, dist)
+	end
+	if dir == defines.direction.south then
+		area = moveBox(area, 0, -dist)
+	end
+	if dir == defines.direction.east then
+		area = moveBox(area, -dist, 0)
+	end
+	if dir == defines.direction.west then
+		area = moveBox(area, dist, 0)
+	end
+	return area
+end
+
+local function getBox(entity)
+	return moveBox(entity.prototype.collision_box, entity.position.x, entity.position.y)	
+end
+
+local function getItemFilter(entity)
+	local network = entity.get_circuit_network(defines.wire_type.red)
+	if not network then network = entity.get_circuit_network(defines.wire_type.green) end
+	if network then
+		local signals = network.signals
+		if signals and #signals > 0 then
+			for _,signal in pairs(signals) do
+				if signal.count > 0 and signal.signal.type == "item" then
+					return signal.signal.name
+				end
+			end
+		end
+	end
+end
+
+function setInserterFilter(entity, data, connection)
+	local box = getBox(entity)
+	box = moveBoxDirection(box, entity.direction, 1)
+	local tgt = entity.surface.find_entities_filtered({area = box, force = entity.force, type = {"loader", "inserter"}, limit = 1})
+	if tgt and #tgt > 0 then
+		local item = getItemFilter(entity)
+		--game.print(tgt[1].name)
+		if item then
+			tgt[1].set_filter(1, item)
+		end
+	end
+	return 0
+end
+
+function trainStatus(entity, data, connection)
+	local trains = entity.force.get_trains(entity.surface)
+	local status = {}
+	for _,val in pairs(defines.train_state) do
+		status[val] = 0
+	end
+	for _,train in pairs(trains) do
+		status[train.state] = status[train.state]+1
+	end
+	return {
+		{id = "moving-trains", value = status[defines.train_state.on_the_path]},
+		{id = "parked-trains", value = status[defines.train_state.wait_station]},
+		{id = "waiting-trains", value = status[defines.train_state.wait_signal]},
+		{id = "lost-trains", value = status[defines.train_state.no_path]},
+	}
+end
+
 function powerSatisfaction(entity, data, connection)
 	return math.floor((100*connection.energy/connection.electric_buffer_size)+0.5)
 end
