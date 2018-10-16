@@ -58,6 +58,55 @@ function setInserterFilter(entity, data, connection)
 	return 0
 end
 
+local function isFull(wagon)
+	local inv = wagon.get_inventory(defines.inventory.cargo_wagon)
+	local filter = inv.get_filter(1)
+	local item = filter and filter or "blueprint"
+	return not inv.can_insert({name=item, count=1})
+end
+
+local function isEmpty(wagon)
+	return wagon.get_inventory(defines.inventory.cargo_wagon).is_empty()
+end
+
+local function isTrainEmpty(train)
+	for _,wagon in pairs(train.carriages) do
+		if wagon.type == "cargo-wagon" then
+			if not isEmpty(wagon) then
+				return false
+			end
+		end
+	end
+	return true
+end
+
+local function isTrainFull(train)
+	for _,wagon in pairs(train.carriages) do
+		if wagon.type == "cargo-wagon" then
+			if not isFull(wagon) then
+				return false
+			end
+		end
+	end
+	return true
+end
+
+function trainFill(entity, data, connection)
+	local trains = connection.get_train_stop_trains()
+	local check = nil
+	for _,train in pairs(trains) do
+		if train.station == connection then
+			check = train
+		end
+	end
+	local empty = check ~= nil and isTrainEmpty(check)
+	local full = check ~= nil and isTrainFull(check)
+	return {
+		{id = "train-empty", value = empty and 1 or 0},
+		{id = "train-full", value = full and 1 or 0},
+	}
+end
+
 function trainStatus(entity, data, connection)
 	local trains = entity.force.get_trains(entity.surface)
 	local status = {}

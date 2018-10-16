@@ -7,6 +7,10 @@ local actuators = {}
 
 maximumTickRate = 9999999
 
+function isTrainStop(entity)
+	return entity.type == "train-stop"
+end
+
 function isInserterOrLoader(entity)
 	return entity.type == "loader" or entity.type == "inserter"
 end
