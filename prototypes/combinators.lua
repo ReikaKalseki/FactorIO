@@ -13,6 +13,7 @@ addCombinator("constr-bots", countConstrBots, isLogiChest, 30)
 addCombinator("power-supply", powerSatisfaction, entityHasPower, 15)
 addMultiCombinator("train-status", {"moving-trains", "parked-trains", "waiting-trains", "lost-trains"}, trainStatus, nil, 90)
 addMultiCombinator("train-fill", {"train-empty", "train-full"}, trainFill, isTrainStop, 120)
+--addCombinatorWithInput("signal-duration", 1, checkSignalDuration, nil, 15)
 
 addCombinator("inserter-filter", setInserterFilter, nil--[[isInserterOrLoader--]], 30, nil, true)
 

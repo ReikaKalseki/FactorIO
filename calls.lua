@@ -91,6 +91,10 @@ local function isTrainFull(train)
 	return true
 end
 
+function checkSignalDuration(entity, data, connection)
+	return 0
+end
+
 function trainFill(entity, data, connection)
 	local trains = connection.get_train_stop_trains()
 	local check = nil

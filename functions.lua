@@ -4,6 +4,7 @@ local validation = {}
 local tickRates = {}
 local ramps = {}
 local actuators = {}
+local inputCounts = {}
 
 maximumTickRate = 9999999
 
@@ -103,7 +104,7 @@ local function setValue(entry, val)
 	
 	for i,signal in ipairs(val) do
 		local slot = {
-			index = i,
+			index = i+(inputCounts[entry.id] and inputCounts[entry.id] or 0),
 			signal = {type = "virtual", name = signal.id},
 			count = signal.value
 		}
@@ -237,6 +238,16 @@ function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate, i
 		
 		return entity
 	end
+end
+
+function addCombinatorWithInput(variant, inputCount, callFunc, validFunc, tickRate, rampedTickRate)
+	local entity = addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate)
+	
+	if data and data.raw and not game then
+		entity.item_slot_count = 1+inputCount
+	end
+	
+	inputCounts[variant] = inputCount
 end
 
 function addMultiCombinator(variant, signals, callFunc, validFunc, tickRate, rampedTickRate, isActuator)
