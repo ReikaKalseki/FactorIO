@@ -48,7 +48,7 @@ function setInserterFilter(entity, data, connection)
 	local box = getBox(entity)
 	box = moveBoxDirection(box, entity.direction, 1)
 	local tgt = entity.surface.find_entities_filtered({area = box, force = entity.force, type = {"loader", "inserter"}, limit = 1})
-	if tgt and #tgt > 0 then
+	if tgt and #tgt > 0 and tgt[1].valid and tgt[1].filter_slot_count > 0 then
 		local item = getItemFilter(entity)
 		--game.print(tgt[1].name)
 		if item then
@@ -137,8 +137,16 @@ function runTimer(entity)
 end
 
 function getNearEnemies(entity) --stagger calls to this one
-	local near = entity.surface.find_entities_filtered({type = "unit", area = {{entity.position.x-24, entity.position.y-24}, {entity.position.x+24, entity.position.y+24}}, force = game.forces.enemy})
-	return #near
+	local forces = {game.forces.enemy}
+	if game.forces.wisp_attack then
+		table.insert(forces, game.forces.wisp_attack)
+	end
+	if game.forces["biter_faction_1"] then
+		for i = 1,5 do
+			table.insert(forces, game.forces["biter_faction_" .. i])
+		end
+	end
+	return #entity.surface.find_entities_filtered({type = "unit", area = {{entity.position.x-24, entity.position.y-24}, {entity.position.x+24, entity.position.y+24}}, force = forces})
 end
 
 function getDayTime(entity)
