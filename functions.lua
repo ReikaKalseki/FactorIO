@@ -201,6 +201,7 @@ function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate, i
 		local entity = table.deepcopy(data.raw["constant-combinator"]["constant-combinator"])
 		entity.name = name
 		entity.minable.result = name
+		entity.icon_size = 32
 		entity.icons = {
 			{icon = entity.icon}, {icon = ico}
 		}
@@ -215,6 +216,7 @@ function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate, i
 		local item = table.deepcopy(data.raw.item["constant-combinator"])
 		item.name = name
 		item.icons = entity.icons
+		item.icon_size = 32
 		item.place_result = name
 		item.localised_name = entity.localised_name
 		local recipe = table.deepcopy(data.raw.recipe["constant-combinator"])
@@ -227,6 +229,7 @@ function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate, i
 			name = variant,
 			icon = ico,
 			icon_size = 32,
+			icon_mipmaps = 0,
 			subgroup = "virtual-signal-special",
 			order = variant,
 			localised_name = {"signal-type." .. variant},
@@ -260,6 +263,7 @@ function addMultiCombinator(variant, signals, callFunc, validFunc, tickRate, ram
 				name = name,
 				icon = "__FactorIO__/graphics/icons/" .. name .. ".png",
 				icon_size = 32,
+				icon_mipmaps = 0,
 				subgroup = "virtual-signal-special",
 				order = variant,
 				localised_name = {"signal-type." .. name},
