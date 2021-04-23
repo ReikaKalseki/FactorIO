@@ -100,7 +100,7 @@ local function setValue(entry, val)
 		return
 	end
 	
-	local params = {parameters = {}}
+	local params = {}
 	
 	for i,signal in ipairs(val) do
 		local slot = {
@@ -108,7 +108,7 @@ local function setValue(entry, val)
 			signal = {type = "virtual", name = signal.id},
 			count = signal.value
 		}
-		table.insert(params.parameters, slot)
+		table.insert(params, slot)
 	end
 	
 	--game.print("Setting " .. entry.id .. " > " .. serpent.block(val))
