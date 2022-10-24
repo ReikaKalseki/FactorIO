@@ -25,7 +25,7 @@ function isElectricPole(entity)
 end
 
 function isLogiChest(entity)
-	return entity.type == "logistic-container"
+	return entity.type == "logistic-container" or entity.type == "roboport"
 end
 
 function isTank(entity)
