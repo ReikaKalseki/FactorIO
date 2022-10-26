@@ -29,7 +29,48 @@ local function getBox(entity)
 	return moveBox(entity.prototype.collision_box, entity.position.x, entity.position.y)	
 end
 
-local function getItemFilter(entity)
+local function getFacingEntity(entity, types)
+	local box = getBox(entity)
+	box = moveBoxDirection(box, entity.direction, 1)
+	local seek = {area = box, force = entity.force, limit = 1}
+	if types then seek.type = types end
+	game.print(serpent.block(seek))
+	return entity.surface.find_entities_filtered(seek)
+end
+
+local function getDesiredBeltDirection(entity)
+	local network = entity.get_circuit_network(defines.wire_type.red)
+	if not network then network = entity.get_circuit_network(defines.wire_type.green) end
+	if network then
+		local signals = network.signals
+		if signals and #signals > 0 then
+			for _,signal in pairs(signals) do
+				if signal.count > 0 and signal.signal.type == "virtual-signal" then
+					if signal.signal.name == "signal-N" then return defines.direction.north end
+					if signal.signal.name == "signal-S" then return defines.direction.south end
+					if signal.signal.name == "signal-E" then return defines.direction.east end
+					if signal.signal.name == "signal-W" then return defines.direction.west end
+				end
+			end
+		end
+	end
+	return nil
+end
+
+function setBeltDirection(entity, data, connection)
+	local tgt = getFacingEntity(entity, "transport-belt")
+	game.print(serpent.block(tgt))
+	if tgt and #tgt > 0 and tgt[1].valid then
+		local dir = getDesiredBeltDirection(entity)
+		--game.print(tgt[1].name)
+		if dir then
+			tgt[1].direction = dir
+		end
+	end
+	return 0
+end
+
+local function getDesiredItemFilter(entity)
 	local network = entity.get_circuit_network(defines.wire_type.red)
 	if not network then network = entity.get_circuit_network(defines.wire_type.green) end
 	if network then
@@ -45,17 +86,51 @@ local function getItemFilter(entity)
 end
 
 function setInserterFilter(entity, data, connection)
-	local box = getBox(entity)
-	box = moveBoxDirection(box, entity.direction, 1)
-	local tgt = entity.surface.find_entities_filtered({area = box, force = entity.force, type = {"loader", "inserter"}, limit = 1})
+	local tgt = getFacingEntity(entity, {"loader", "inserter"})
 	if tgt and #tgt > 0 and tgt[1].valid and tgt[1].filter_slot_count > 0 then
-		local item = getItemFilter(entity)
+		local item = getDesiredItemFilter(entity)
 		--game.print(tgt[1].name)
 		if item then
 			tgt[1].set_filter(1, item)
 		end
 	end
 	return 0
+end
+
+local function isTrainFull(train)
+	for _,wagon in pairs(train.carriages) do
+		if wagon.type == "cargo-wagon" then
+			if not isFull(wagon) then
+				return false
+			end
+		end
+	end
+	return true
+end
+
+function checkSignalDuration(entity, data, connection)
+	return 0
+end
+
+local function trainSize(train)
+	local ret = {locomotivesFront = 0, locomotivesBack = 0, wagons = 0, fluidWagons = 0}
+	if not train then return ret end
+	ret.wagons = table_size(train.cargo_wagons)
+	ret.fluidWagons = table_size(train.fluid_wagons)
+	ret.locomotivesFront = table_size(train.locomotives["front_movers"])
+	ret.locomotivesBack = table_size(train.locomotives["back_movers"])
+	return true
+end
+
+function trainSize(entity, data, connection)
+	local check = connection.get_stopped_train()
+	local counts = countTrainSize(check)
+	return {
+		{id = "train-locos-front", value = counts.locomotivesFront},
+		{id = "train-locos-back", value = counts.locomotivesBack},
+		{id = "train-wagons", value = counts.wagons},
+		{id = "train-fluid-wagons", value = counts.fluidWagons},
+	}
 end
 
 local function isFull(wagon)
@@ -91,18 +166,8 @@ local function isTrainFull(train)
 	return true
 end
 
-function checkSignalDuration(entity, data, connection)
-	return 0
-end
-
 function trainFill(entity, data, connection)
-	local trains = connection.get_train_stop_trains()
-	local check = nil
-	for _,train in pairs(trains) do
-		if train.station == connection then
-			check = train
-		end
-	end
+	local check = connection.get_stopped_train()
 	local empty = check ~= nil and isTrainEmpty(check)
 	local full = check ~= nil and isTrainFull(check)
 	return {

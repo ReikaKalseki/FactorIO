@@ -13,8 +13,10 @@ addCombinator("constr-bots", countConstrBots, isLogiChest, 30)
 addCombinator("power-supply", powerSatisfaction, entityHasPower, 15)
 addMultiCombinator("train-status", {"moving-trains", "parked-trains", "waiting-trains", "lost-trains"}, trainStatus, nil, 90)
 addMultiCombinator("train-fill", {"train-empty", "train-full"}, trainFill, isTrainStop, 120)
+addMultiCombinator("train-size", {"train-locos-front", "train-locos-back", "train-wagons", "train-fluid-wagons"}, trainSize, isTrainStop, 30)
 --addCombinatorWithInput("signal-duration", 1, checkSignalDuration, nil, 15)
 
 addCombinator("inserter-filter", setInserterFilter, nil--[[isInserterOrLoader--]], 30, nil, true)
+addCombinator("belt-rotator", setBeltDirection, nil--[[isInserterOrLoader--]], 15, nil, true)
 
 log("Registered combinators; maximum tick rate is " .. maximumTickRate)
