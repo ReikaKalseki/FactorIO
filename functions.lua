@@ -96,6 +96,7 @@ local function findConnection(id, entity, wire)
 end
 
 local function setValue(entry, val)
+	if not entry.entity.valid then return end
 	if actuators[entry.id] then
 		return
 	end
@@ -130,6 +131,8 @@ end
 function tickCombinator(entry, tick)
 	--game.print("Ticking " .. entry.id)
 	
+	if not (entry.entity and entry.entity.valid) then game.print("Could not find entity for signal ID = " .. entry.id .. "!") return false end
+	
 	if validation[entry.id] then --does it even need a connection?
 		if entry.connection then
 			if not entry.connection.valid then
@@ -150,7 +153,7 @@ function tickCombinator(entry, tick)
 		if not (entry.connection and entry.connection.valid) then
 			--game.print("No connection for " .. entry.id)
 			setValue(entry, {{name = entry.id, value = 0}})
-			return
+			return true
 		end
 	end
 	
@@ -183,6 +186,7 @@ function tickCombinator(entry, tick)
 	end
 	
 	setValue(entry, type(val) == "table" and val or {{id = entry.id, value = val}})
+	return true
 end
 
 function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate, isActuator)
@@ -207,7 +211,7 @@ function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate, i
 		}
 		entity.localised_name = {"basic-combinator-name." .. (isActuator and "actuator" or "sensor"), {"signal-type." .. variant}}
 		entity.energy_source = {type = "electric", usage_priority = "secondary-input"}
-		entity.active_energy_usage = "4KW"
+		entity.active_energy_usage = isActuator and "20kW" or "4KW"
 		if isActuator then
 			entity.item_slot_count = 0
 		else
@@ -238,6 +242,8 @@ function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate, i
 		data:extend({entity, item, recipe, signal})
 		
 		table.insert(data.raw.technology["more-signals"].effects, {type = "unlock-recipe", recipe = name})
+		
+		--log("Added combinator '" .. variant .. "', calls '" .. serpent.block(callFunc) .. "' @ " .. tickRate)
 		
 		return entity
 	end

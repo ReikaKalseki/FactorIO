@@ -34,7 +34,7 @@ local function getFacingEntity(entity, types)
 	box = moveBoxDirection(box, entity.direction, 1)
 	local seek = {area = box, force = entity.force, limit = 1}
 	if types then seek.type = types end
-	game.print(serpent.block(seek))
+	--game.print(serpent.block(seek))
 	return entity.surface.find_entities_filtered(seek)
 end
 
@@ -45,7 +45,7 @@ local function getDesiredBeltDirection(entity)
 		local signals = network.signals
 		if signals and #signals > 0 then
 			for _,signal in pairs(signals) do
-				if signal.count > 0 and signal.signal.type == "virtual-signal" then
+				if signal.count > 0 and signal.signal.type == "virtual" then
 					if signal.signal.name == "signal-N" then return defines.direction.north end
 					if signal.signal.name == "signal-S" then return defines.direction.south end
 					if signal.signal.name == "signal-E" then return defines.direction.east end
@@ -59,10 +59,9 @@ end
 
 function setBeltDirection(entity, data, connection)
 	local tgt = getFacingEntity(entity, "transport-belt")
-	game.print(serpent.block(tgt))
-	if tgt and #tgt > 0 and tgt[1].valid then
+	if tgt and table_size(tgt) > 0 and tgt[1].valid then
 		local dir = getDesiredBeltDirection(entity)
-		--game.print(tgt[1].name)
+		--game.print(tgt[1].name .. " and " .. serpent.block(dir))
 		if dir then
 			tgt[1].direction = dir
 		end
@@ -87,7 +86,7 @@ end
 
 function setInserterFilter(entity, data, connection)
 	local tgt = getFacingEntity(entity, {"loader", "inserter"})
-	if tgt and #tgt > 0 and tgt[1].valid and tgt[1].filter_slot_count > 0 then
+	if tgt and table_size(tgt) > 0 and tgt[1].valid and tgt[1].filter_slot_count > 0 then
 		local item = getDesiredItemFilter(entity)
 		--game.print(tgt[1].name)
 		if item then
@@ -112,19 +111,20 @@ function checkSignalDuration(entity, data, connection)
 	return 0
 end
 
-local function trainSize(train)
+local function countTrainSize(train)
 	local ret = {locomotivesFront = 0, locomotivesBack = 0, wagons = 0, fluidWagons = 0}
 	if not train then return ret end
 	ret.wagons = table_size(train.cargo_wagons)
 	ret.fluidWagons = table_size(train.fluid_wagons)
 	ret.locomotivesFront = table_size(train.locomotives["front_movers"])
 	ret.locomotivesBack = table_size(train.locomotives["back_movers"])
-	return true
+	return ret
 end
 
 function trainSize(entity, data, connection)
 	local check = connection.get_stopped_train()
 	local counts = countTrainSize(check)
+	--game.print(serpent.block(counts))
 	return {
 		{id = "train-locos-front", value = counts.locomotivesFront},
 		{id = "train-locos-back", value = counts.locomotivesBack},

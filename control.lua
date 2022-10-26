@@ -28,7 +28,7 @@ end)
 
 function shouldTick(entry)
 	--game.print("Checking " .. entry.id .. " @ " .. entry.tick_rate .. " + " .. entry.tick_offset .. " #" .. (game.tick%entry.tick_rate))
-	return game.tick%entry.tick_rate == entry.tick_offset
+	return entry and game.tick%entry.tick_rate == entry.tick_offset
 end
 
 script.on_event(defines.events.on_tick, function(event)
@@ -36,7 +36,9 @@ script.on_event(defines.events.on_tick, function(event)
 		local signals = global.signals
 		for unit,entry in pairs(signals.combinators) do
 			if shouldTick(entry) then
-				tickCombinator(entry, event.tick)
+				if not tickCombinator(entry, event.tick) then
+					signals.combinators[unit] = nil
+				end
 			end
 		end		
 	end
