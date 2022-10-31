@@ -1,5 +1,8 @@
 local callbacks = {}
 
+---AVOID FUNCTION NAME CONFLICTS, WHICH WILL CONFUSE THE DECLARATIONS IN COMBINATORS
+---ALSO IF ANY CALLS OR THEIR NAMES CHANGE, GAME NEEDS RESTART THEN COMBINATORS NEED TO BE BROKEN AND REPLACED
+
 local function moveBox(area, dx, dy)
 	--printTable(area)
 	area.left_top.x = area.left_top.x+dx
