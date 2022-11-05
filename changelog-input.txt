@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.148.1
+Date: Oct 31 2022
+	- "Robot count" sensor now works on roboports as well
+	- Added "Belt Rotator" actuator
+	- Added "train size" sensor
+	- Increased power cost of actuators
+---------------------------------------------------------------------------------------------------
 Version: 1.102.1
 Date: Mar 27 2021
 	- Update to 1.1
