@@ -18,7 +18,7 @@ function initGlobal(markDirty)
 	signals.dirty = markDirty
 end
 
-script.on_configuration_changed(function()
+script.on_configuration_changed(function(data)
 	initGlobal(true)
 end)
 

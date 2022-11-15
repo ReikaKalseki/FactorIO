@@ -1,9 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.152.1
+Date: Nov 15 2022
+	- Added "Train Totals" (items and fluids) sensor
+	- Adjusted sensor update rates
+---------------------------------------------------------------------------------------------------
 Version: 1.148.1
 Date: Oct 31 2022
 	- "Robot count" sensor now works on roboports as well
 	- Added "Belt Rotator" actuator
-	- Added "train size" sensor
+	- Added "Train Size" sensor
 	- Increased power cost of actuators
 ---------------------------------------------------------------------------------------------------
 Version: 1.102.1

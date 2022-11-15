@@ -99,17 +99,6 @@ function setInserterFilter(entity, data, connection)
 	return 0
 end
 
-local function isTrainFull(train)
-	for _,wagon in pairs(train.carriages) do
-		if wagon.type == "cargo-wagon" then
-			if not isFull(wagon) then
-				return false
-			end
-		end
-	end
-	return true
-end
-
 function checkSignalDuration(entity, data, connection)
 	return 0
 end
@@ -133,6 +122,32 @@ function trainSize(entity, data, connection)
 		{id = "train-locos-back", value = counts.locomotivesBack},
 		{id = "train-wagons", value = counts.wagons},
 		{id = "train-fluid-wagons", value = counts.fluidWagons},
+	}
+end
+
+local function countTrainTotals(train)
+	local ret = {items = 0, fluids = 0}
+	if not train then return ret end
+	for _,wagon in pairs(train.cargo_wagons) do
+		local inv = wagon.get_inventory(defines.inventory.cargo_wagon);
+		ret.items = ret.items+inv.get_item_count()
+	end
+	for _,wagon in pairs(train.fluid_wagons) do
+		local fb = wagon.fluidbox[1]
+		if fb then
+			ret.fluids = ret.fluids+fb.amount
+		end
+	end
+	return ret
+end
+
+function trainTotals(entity, data, connection)
+	local check = connection.get_stopped_train()
+	local counts = countTrainTotals(check)
+	--game.print(serpent.block(counts))
+	return {
+		{id = "train-total-items", value = counts.items},
+		{id = "train-total-fluid", value = counts.fluids},
 	}
 end
 

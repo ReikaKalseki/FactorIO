@@ -243,7 +243,7 @@ function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate, i
 		
 		table.insert(data.raw.technology["more-signals"].effects, {type = "unlock-recipe", recipe = name})
 		
-		--log("Added combinator '" .. variant .. "', calls '" .. serpent.block(callFunc) .. "' @ " .. tickRate)
+		log("Added combinator '" .. variant .. "', calls '" .. serpent.block(callFunc) .. "' @ " .. tickRate)
 		
 		return entity
 	end

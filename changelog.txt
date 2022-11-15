@@ -1,0 +1,78 @@
+---------------------------------------------------------------------------------------------------
+Version: 1.101.148
+Date: Oct 31 2022
+  New Features:
+    - Added "Belt Rotator" actuator
+    - Added "train size" sensor
+  Rebalancing:
+    - Increased power cost of actuators
+  Misc Changes:
+    - "Robot count" sensor now works on roboports as well
+---------------------------------------------------------------------------------------------------
+Version: 1.101.102
+Date: Mar 27 2021
+  Misc Changes:
+    - Update to 1.1
+---------------------------------------------------------------------------------------------------
+Version: 1.018.1
+Date: May 29 2020
+  Misc Changes:
+    - Update to 0.18
+---------------------------------------------------------------------------------------------------
+Version: 1.017.24
+Date: Sep 30 2019
+  New Features:
+    - Added some sanity checks to prevent inserter filter actuator from attempting to set filters on entities that do not support it
+    - Added support for "Will of the wisp" mod to enemy sensor
+---------------------------------------------------------------------------------------------------
+Version: 1.017.6
+Date: Jun 6 2019
+  New Features:
+    - Added support for combinators with input data
+  Misc Changes:
+    - Partly added "signal duration" sensor
+---------------------------------------------------------------------------------------------------
+Version: 1.017.1
+Date: Mar 23 2019
+  Misc Changes:
+    - Update to 0.17
+---------------------------------------------------------------------------------------------------
+Version: 1.016.164
+Date: Oct 15 2018
+  New Features:
+    - Added train empty/full sensor
+---------------------------------------------------------------------------------------------------
+Version: 1.016.160
+Date: Oct 10 2018
+  New Features:
+    - Added 'train status' sensor
+    - Added inserter/loader filter actuator
+---------------------------------------------------------------------------------------------------
+Version: 1.016.148
+Date: Sep 18 2018
+  Bugfixes:
+    - Fixed localizations
+  New Features:
+    - Added 'power satisfaction' sensor
+  Misc Changes:
+    - Moved tech earlier in the progression
+---------------------------------------------------------------------------------------------------
+Version: 1.016.120
+Date: Aug 20 2018
+  New Features:
+    - Added fix for overly large negative measured values out of 32 bit range
+---------------------------------------------------------------------------------------------------
+Version: 1.016.115
+Date: Aug 15 2018
+  Bugfixes:
+    - Fixed potential error with sensors with data cache having no cache to write to
+---------------------------------------------------------------------------------------------------
+Version: 1.016.98
+Date: Jul 30 2018
+  Bugfixes:
+    - Fixed some errors with sensors with invalid or missing connections to their target
+---------------------------------------------------------------------------------------------------
+Version: 1.016.96
+Date: Jul 29 2018
+  Misc Changes:
+    - Release
