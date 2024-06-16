@@ -17,6 +17,7 @@ These can be placed anywhere and will output their information.
 * Research Progress detector: Output research progress from 0 to 100
 * Timing Detector: Toggles between either 0/30 or 15/45 once a second. (I believe this is a glitch, but you could still detect >= 30 for both.)
 * Train Status Detector: Detects the status of all trains on your force, and reports how many are moving, stopped at station, stopped at a rail signal, and stuck because "no path".
+* Nearby Enemy Count Detector: Outputs the number of enemies within a 49x49 box centered on the combinator (i.e. <24 tiles away in x and y).
 
 ## Linked Detectors
 
