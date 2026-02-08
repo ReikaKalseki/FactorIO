@@ -1,3 +1,3 @@
-require "combinators"
+require "prototypes.combinators"
 
 addItemToRecipeIfExists(COMBINATORS["near-enemies"].recipe, "nickel-plate", 1)
