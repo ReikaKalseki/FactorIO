@@ -61,7 +61,7 @@ end
 local function onEntityAdded(entity)
 	if entity.type == "constant-combinator" then
 		local id = string.sub(entity.name, 12)
-		if COMBINATORS[id] then
+		if _ENV["FIO-COMBINATORS"][id] then
 			local rate = getTickRate(id)
 			local ramp = getRampRate(id)
 			local offset = maximumTickRate*math.random(0, math.floor(rate/maximumTickRate)-1)

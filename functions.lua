@@ -1,6 +1,7 @@
 require "calls"
 require "__DragonIndustries__.registration"
 require "__DragonIndustries__.entities"
+require "__DragonIndustries__.recipe"
 
 ---@class (exact) CombinatorTypeDef
 ---@field id string
@@ -10,6 +11,9 @@ require "__DragonIndustries__.entities"
 ---@field rampRate? int
 ---@field inputCount int
 ---@field isActuator? boolean
+---@field recipe data.RecipePrototype
+---@field entity data.ConstantCombinatorPrototype
+---@field signalSet [data.VirtualSignalPrototype]
 ---@field emptySignal {string: int}
 
 ---@class (exact) CombinatorConnection
@@ -27,7 +31,7 @@ require "__DragonIndustries__.entities"
 ---@field connection? CombinatorConnection
 
 ---@type {string: CombinatorTypeDef}
-COMBINATORS = {}
+if not COMBINATORS then COMBINATORS = {} end
 
 maximumTickRate = 9999999
 
@@ -209,6 +213,7 @@ end
 ---@param isActuator? boolean
 ---@return data.ConstantCombinatorPrototype|LuaEntityPrototype
 function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate, isActuator)
+	if COMBINATORS[variant] then return COMBINATORS[variant].entity end
 	local def = {
 		id = variant,
 		callback = callFunc,
@@ -235,6 +240,7 @@ function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate, i
 			active_energy_usage = isActuator and "20kW" or "4KW",
 			item_slot_count = isActuator and 0 or 1,
 		})
+		def.entity = entity
 		local item = createDerivative(data.raw.item["constant-combinator"], {
 			name = name,
 			icons = entity.icons,
@@ -245,9 +251,14 @@ function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate, i
 		local recipe = createDerivative(data.raw.recipe["constant-combinator"], {
 			name = name,
 			localised_name = entity.localised_name,
+			ingredients = {
+				{type = "item", name = "electronic-circuit", amount = 5},
+				{type = "item", name = "advanced-circuit", amount = 1},
+				{type = "item", name = "steel-plate", amount = 2},
+			},
 			results = {{type = "item", name = name, amount = 1}}
 		})
-		addItemToRecipe(recipe, "advanced-circuit", 1)
+		def.recipe = recipe
 		
 		local signal = {
 			type = "virtual-signal",
@@ -259,6 +270,8 @@ function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate, i
 			order = variant,
 			localised_name = {"signal-type." .. variant},
 		}
+
+		def.signalSet = {signal}
 		
 		data:extend({entity, item, recipe, signal})
 		
@@ -272,21 +285,40 @@ function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate, i
 		return nil
 	end
 end
-
-function addCombinatorWithInput(variant, inputCount, callFunc, validFunc, tickRate, rampedTickRate)
+--[[this is no longer necessary as combinators now have infinite slot limits
+---@param variant string
+---@param inputCount int
+---@param callFunc fun(LuaEntity, table, LuaEntity): int|{string:int}
+---@param validFunc? fun(LuaEntity): boolean
+---@param tickRate int
+---@param rampedTickRate? int
+---@param isActuator? boolean
+---@return data.ConstantCombinatorPrototype|LuaEntityPrototype
+function addCombinatorWithInput(variant, inputCount, callFunc, validFunc, tickRate, rampedTickRate, isActuator)
 	local entity = addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate)
-	
+	if not entity then return end
+	COMBINATORS[variant].inputCount = 1+inputCount
+
 	if data and data.raw and not game then
 		entity.item_slot_count = 1+inputCount
 	end
-	
-	inputCounts[variant] = inputCount
 end
+--]]
 
+---@param variant string
+---@param signals [string]
+---@param callFunc fun(LuaEntity, table, LuaEntity): int|{string:int}
+---@param validFunc? fun(LuaEntity): boolean
+---@param tickRate int
+---@param rampedTickRate? int
+---@param isActuator? boolean
+---@return data.ConstantCombinatorPrototype|LuaEntityPrototype
 function addMultiCombinator(variant, signals, callFunc, validFunc, tickRate, rampedTickRate, isActuator)
 	local entity = addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate, isActuator)
 	
-	if data and data.raw and not game then
+	if entity and data and data.raw and not game then
+		local def = COMBINATORS[variant]
+		def.signalSet = {}
 		for _,name in pairs(signals) do
 			local signal = {
 				type = "virtual-signal",
@@ -298,9 +330,10 @@ function addMultiCombinator(variant, signals, callFunc, validFunc, tickRate, ram
 				order = variant,
 				localised_name = {"signal-type." .. name},
 			}
+			table.insert(def.signalSet, signal)
 			data:extend({signal})
 		end
 		data.raw["virtual-signal"][variant] = nil --delete the base type
-		entity.item_slot_count = #signals
+		--ntity.item_slot_count = #signals --this is no longer necessary as combinators now have infinite slot limits
 	end
 end
