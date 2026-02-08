@@ -1,40 +1,8 @@
-require "config" 
+require "__DragonIndustries__.registration" 
 
-local tech = table.deepcopy(data.raw.technology["circuit-network"])
-tech.name = "more-signals"
-tech.prerequisites = {"circuit-network", "advanced-electronics"}
-tech.effects = {}
-tech.unit.count = math.floor(tech.unit.count*1.5)
-
-data:extend({tech})
-
---[[
-data:extend({
-	{
-		type = "technology",
-		name = "more-signals",
-		prerequisites =
-		{
-			"circuit-network",
-		},
-		icon = "__MoreSignals__/graphics/technology/tech.png",
-		effects =
-		{
-			
-		},
-		unit =
-		{
-		  count = 150,
-		  ingredients =
-		  {
-			{"automation-science-pack", 1},
-			{"logistic-science-pack", 1},
-		  },
-		  time = 30
-		},
-		order = "[circuit-network]-3",
-		icon_size = 128,
-	}
+local tech = addDerivative("technology", "circuit-network", {
+	name = "more-signals",
+	prerequisites = {"circuit-network", "advanced-cirucit"},
+	effects = {}
 })
-
---]]
+tech.unit.count = math.floor(tech.unit.count*1.5)

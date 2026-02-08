@@ -1,12 +1,16 @@
-require "config"
 require "prototypes.combinators"
 require "functions"
 
+---@return {int: CombinatorEntry}
+local function getCombinatorStorage()
+	return storage.signals
+end
+
 function initGlobal(markDirty)
-	if not global.signals then
-		global.signals = {}
+	if not storage.signals then
+		storage.signals = {}
 	end
-	local signals = global.signals
+	local signals = storage.signals
 	if not signals.combinators then
 		signals.combinators = {}
 	end
@@ -26,6 +30,8 @@ script.on_init(function()
 	initGlobal(true)
 end)
 
+---@param entry CombinatorEntry
+---@return boolean
 function shouldTick(entry)
 	--game.print("Checking " .. entry.id .. " @ " .. entry.tick_rate .. " + " .. entry.tick_offset .. " #" .. (game.tick%entry.tick_rate))
 	return entry and game.tick%entry.tick_rate == entry.tick_offset
@@ -33,23 +39,25 @@ end
 
 script.on_event(defines.events.on_tick, function(event)
 	if event.tick%maximumTickRate == 0 then
-		local signals = global.signals
-		for unit,entry in pairs(signals.combinators) do
+		local signals = getCombinatorStorage()
+		for unit,entry in pairs(signals) do
 			if shouldTick(entry) then
 				if not tickCombinator(entry, event.tick) then
-					signals.combinators[unit] = nil
+					signals[unit] = nil
 				end
 			end
 		end		
 	end
 end)
 
+---@param entity LuaEntity
 local function onEntityRemoved(entity)
 	if entity.unit_number then
-		global.signals.combinators[entity.unit_number] = nil
+		getCombinatorStorage()[entity.unit_number] = nil
 	end
 end
 
+---@param entity LuaEntity
 local function onEntityAdded(entity)
 	if entity.type == "constant-combinator" then
 		local id = string.sub(entity.name, 12)
@@ -63,9 +71,9 @@ local function onEntityAdded(entity)
 				entry.ramp_rate = ramp
 				entry.tick_rate = ramp
 			end
-			global.signals.combinators[entity.unit_number] = entry
+			getCombinatorStorage()[entity.unit_number] = entry
 			--[[
-			game.print("Added combinator of type " .. global.signals.combinators[entity.unit_number].id .. ", tick rate of " .. rate .. " with offset of " .. global.signals.combinators[entity.unit_number].tick_offset)
+			game.print("Added combinator of type " .. getCombinatorStorage()[entity.unit_number].id .. ", tick rate of " .. rate .. " with offset of " .. getCombinatorStorage()[entity.unit_number].tick_offset)
 			if ramp then
 				game.print("Ramping from " .. entry.base_tick_rate .. " to " .. entry.ramp_rate)
 			end
@@ -75,7 +83,7 @@ local function onEntityAdded(entity)
 end
 
 script.on_event(defines.events.on_entity_died, function(event)
-	onEntityRemoved(event.entity)	
+	onEntityRemoved(event.entity)
 end)
 
 script.on_event(defines.events.on_pre_player_mined_item, function(event)
@@ -87,9 +95,9 @@ script.on_event(defines.events.on_robot_pre_mined, function(event)
 end)
 
 script.on_event(defines.events.on_built_entity, function(event)
-	onEntityAdded(event.created_entity)
+	onEntityAdded(event.entity)
 end)
 
 script.on_event(defines.events.on_robot_built_entity, function(event)
-	onEntityAdded(event.created_entity)
+	onEntityAdded(event.entity)
 end)

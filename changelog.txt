@@ -1,9 +1,16 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.101.152
+Date: Nov 15 2022
+  New Features:
+    - Added "Train Totals" (items and fluids) sensor
+  Misc Changes:
+    - Adjusted sensor update rates
+---------------------------------------------------------------------------------------------------
 Version: 1.101.148
 Date: Oct 31 2022
   New Features:
     - Added "Belt Rotator" actuator
-    - Added "train size" sensor
+    - Added "Train Size" sensor
   Rebalancing:
     - Increased power cost of actuators
   Misc Changes:

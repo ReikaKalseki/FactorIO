@@ -1,5 +1,3 @@
-local callbacks = {}
-
 ---AVOID FUNCTION NAME CONFLICTS, WHICH WILL CONFUSE THE DECLARATIONS IN COMBINATORS
 ---ALSO IF ANY CALLS OR THEIR NAMES CHANGE, GAME NEEDS RESTART THEN COMBINATORS NEED TO BE BROKEN AND REPLACED
 
@@ -41,64 +39,6 @@ local function getFacingEntity(entity, types)
 	return entity.surface.find_entities_filtered(seek)
 end
 
-local function getDesiredBeltDirection(entity)
-	local network = entity.get_circuit_network(defines.wire_type.red)
-	if not network then network = entity.get_circuit_network(defines.wire_type.green) end
-	if network then
-		local signals = network.signals
-		if signals and #signals > 0 then
-			for _,signal in pairs(signals) do
-				if signal.count > 0 and signal.signal.type == "virtual" then
-					if signal.signal.name == "signal-N" then return defines.direction.north end
-					if signal.signal.name == "signal-S" then return defines.direction.south end
-					if signal.signal.name == "signal-E" then return defines.direction.east end
-					if signal.signal.name == "signal-W" then return defines.direction.west end
-				end
-			end
-		end
-	end
-	return nil
-end
-
-function setBeltDirection(entity, data, connection)
-	local tgt = getFacingEntity(entity, "transport-belt")
-	if tgt and table_size(tgt) > 0 and tgt[1].valid then
-		local dir = getDesiredBeltDirection(entity)
-		--game.print(tgt[1].name .. " and " .. serpent.block(dir))
-		if dir then
-			tgt[1].direction = dir
-		end
-	end
-	return 0
-end
-
-local function getDesiredItemFilter(entity)
-	local network = entity.get_circuit_network(defines.wire_type.red)
-	if not network then network = entity.get_circuit_network(defines.wire_type.green) end
-	if network then
-		local signals = network.signals
-		if signals and #signals > 0 then
-			for _,signal in pairs(signals) do
-				if signal.count > 0 and signal.signal.type == "item" then
-					return signal.signal.name
-				end
-			end
-		end
-	end
-end
-
-function setInserterFilter(entity, data, connection)
-	local tgt = getFacingEntity(entity, {"loader", "inserter"})
-	if tgt and table_size(tgt) > 0 and tgt[1].valid and tgt[1].filter_slot_count > 0 then
-		local item = getDesiredItemFilter(entity)
-		--game.print(tgt[1].name)
-		if item then
-			tgt[1].set_filter(1, item)
-		end
-	end
-	return 0
-end
-
 function checkSignalDuration(entity, data, connection)
 	return 0
 end
@@ -113,15 +53,19 @@ local function countTrainSize(train)
 	return ret
 end
 
+---@param entity LuaEntity
+---@param data table
+---@param connection LuaEntity
+---@return {string:int}
 function trainSize(entity, data, connection)
 	local check = connection.get_stopped_train()
 	local counts = countTrainSize(check)
 	--game.print(serpent.block(counts))
 	return {
-		{id = "train-locos-front", value = counts.locomotivesFront},
-		{id = "train-locos-back", value = counts.locomotivesBack},
-		{id = "train-wagons", value = counts.wagons},
-		{id = "train-fluid-wagons", value = counts.fluidWagons},
+		["train-locos-front"] = counts.locomotivesFront,
+		["train-locos-back"] = counts.locomotivesBack,
+		["train-wagons"] = counts.wagons,
+		["train-fluid-wagons"] = counts.fluidWagons,
 	}
 end
 
@@ -141,13 +85,17 @@ local function countTrainTotals(train)
 	return ret
 end
 
+---@param entity LuaEntity
+---@param data table
+---@param connection LuaEntity
+---@return {string:int}
 function trainTotals(entity, data, connection)
 	local check = connection.get_stopped_train()
 	local counts = countTrainTotals(check)
 	--game.print(serpent.block(counts))
 	return {
-		{id = "train-total-items", value = counts.items},
-		{id = "train-total-fluid", value = counts.fluids},
+		["train-total-items"] = counts.items,
+		["train-total-fluid"] = counts.fluids,
 	}
 end
 
@@ -184,18 +132,26 @@ local function isTrainFull(train)
 	return true
 end
 
+---@param entity LuaEntity
+---@param data table
+---@param connection LuaEntity
+---@return {string:int}
 function trainFill(entity, data, connection)
 	local check = connection.get_stopped_train()
 	local empty = check ~= nil and isTrainEmpty(check)
 	local full = check ~= nil and isTrainFull(check)
 	return {
-		{id = "train-empty", value = empty and 1 or 0},
-		{id = "train-full", value = full and 1 or 0},
+		["train-empty"] = empty and 1 or 0,
+		["train-full"] = full and 1 or 0,
 	}
 end
 
+---@param entity LuaEntity
+---@param data table
+---@param connection LuaEntity
+---@return {string:int}
 function trainStatus(entity, data, connection)
-	local trains = entity.force.get_trains(entity.surface)
+	local trains = game.train_manager.get_trains({force=entity.force, surface=entity.surface})
 	local status = {}
 	for _,val in pairs(defines.train_state) do
 		status[val] = 0
@@ -204,21 +160,33 @@ function trainStatus(entity, data, connection)
 		status[train.state] = status[train.state]+1
 	end
 	return {
-		{id = "moving-trains", value = status[defines.train_state.on_the_path]},
-		{id = "parked-trains", value = status[defines.train_state.wait_station]},
-		{id = "waiting-trains", value = status[defines.train_state.wait_signal]},
-		{id = "lost-trains", value = status[defines.train_state.no_path]},
+		["moving-trains"]=status[defines.train_state.on_the_path],
+		["parked-trains"]=status[defines.train_state.wait_station],
+		["waiting-trains"]=status[defines.train_state.wait_signal],
+		["lost-trains"]=status[defines.train_state.no_path],
 	}
 end
 
+---@param entity LuaEntity
+---@param data table
+---@param connection LuaEntity
+---@return int
 function powerSatisfaction(entity, data, connection)
 	return math.floor((100*connection.energy/connection.electric_buffer_size)+0.5)
 end
 
+---@param entity LuaEntity
+---@param data table
+---@param connection LuaEntity
+---@return int
 function runTimer(entity)
 	return game.tick%60
 end
 
+---@param entity LuaEntity
+---@param data table
+---@param connection LuaEntity
+---@return int
 function getNearEnemies(entity) --stagger calls to this one
 	local forces = {game.forces.enemy}
 	if game.forces.wisp_attack then
@@ -229,18 +197,30 @@ function getNearEnemies(entity) --stagger calls to this one
 			table.insert(forces, game.forces["biter_faction_" .. i])
 		end
 	end
-	return #entity.surface.find_entities_filtered({type = "unit", area = {{entity.position.x-24, entity.position.y-24}, {entity.position.x+24, entity.position.y+24}}, force = forces})
+	return entity.surface.count_entities_filtered({type = "unit", area = {{entity.position.x-24, entity.position.y-24}, {entity.position.x+24, entity.position.y+24}}, force = forces})
 end
 
+---@param entity LuaEntity
+---@param data table
+---@param connection LuaEntity
+---@return int
 function getDayTime(entity)
 	return (math.floor(entity.surface.daytime*24000+0.5)+6000)%24000 --MC time
 end
 
+---@param entity LuaEntity
+---@param data table
+---@param connection LuaEntity
+---@return int
 function getResearchProgress(entity)
 	local force = entity.force
 	return math.floor(force.research_progress*100 + 0.5)
 end
 
+---@param entity LuaEntity
+---@param data table
+---@param connection LuaEntity
+---@return int
 function countLogiBots(entity, data, connection)
 	local network = connection.logistic_network
 	if network then
@@ -249,6 +229,10 @@ function countLogiBots(entity, data, connection)
 	return 0
 end
 
+---@param entity LuaEntity
+---@param data table
+---@param connection LuaEntity
+---@return int
 function countConstrBots(entity, data, connection)
 	local network = connection.logistic_network
 	if network then
@@ -257,6 +241,10 @@ function countConstrBots(entity, data, connection)
 	return 0
 end
 
+---@param entity LuaEntity
+---@param data table
+---@param connection LuaEntity
+---@return int
 function getPowerProduction(entity, data, connection) --in kW
 	local last = data.last_value and data.last_value or -1
 	local stats = connection.electric_network_statistics
@@ -269,6 +257,10 @@ function getPowerProduction(entity, data, connection) --in kW
 	return last == -1 and 0 or diff/500
 end
 
+---@param entity LuaEntity
+---@param data table
+---@param connection LuaEntity
+---@return int
 function getPowerConsumption(entity, data, connection) --in kW
 	local last = data.last_value and data.last_value or -1
 	local stats = connection.electric_network_statistics
@@ -281,13 +273,22 @@ function getPowerConsumption(entity, data, connection) --in kW
 	return last == -1 and 0 or diff/500
 end
 
+---@param entity LuaEntity
+---@param data table
+---@param connection LuaEntity
+---@return int
 function getFluidTemp(entity, data, connection)
 	local fluid = connection.fluidbox[1]
 	return fluid and fluid.temperature or 0
 end
 
+---@param entity LuaEntity
+---@param data table
+---@param connection LuaEntity
+---@return int
 function countEmptySlots(entity, data, connection)
 	local inv = connection.get_inventory(defines.inventory.chest)
+	if not inv then return 0 end
 	local ret = 0
 	for i = 1,#inv do
 		if not (inv[i] and inv[i].valid_for_read) then
@@ -295,23 +296,4 @@ function countEmptySlots(entity, data, connection)
 		end
 	end
 	return ret
-end
-
-function runCallback(id, entity, data, connection)
-	local func = callbacks[id]
-	if func then
-		--game.print("Running callback for combinator " .. id)
-		return func(entity, data, connection)
-	else
-		game.print("Could not find callback for entity " .. entity.name .. ", ID = " .. id .. "!")
-		return 0
-	end
-end
-
-function registerCall(id, callback)
-	callbacks[id] = callback
-end
-
-function typeExists(id)
-	return callbacks[id] ~= nil
 end
