@@ -141,7 +141,8 @@ local function runCallback(entry)
 	local def = COMBINATORS[entry.id]
 	if def then
 		--game.print("Running callback for combinator " .. id)
-		local ret = def.callback(entry.entity, entry.data, entry.connection.entity)
+		local ret = def.callback(entry.entity, entry.data, entry.connection and entry.connection.entity or nil)
+		game.print("Callback for " .. entry.id .. " returned " .. serpent.block(ret))
 		if ret == nil then return nil end
 		return type(ret) == "number" and {[entry.id]=ret} or ret
 	else
@@ -228,7 +229,7 @@ function addCombinator(variant, callFunc, validFunc, tickRate, rampedTickRate, i
 	
 	local name = "combinator-" .. variant
 	if prototypes then
-		return prototypes[name]
+		return prototypes.entity[name]
 	elseif data and data.raw and not game then
 		local ico = "__FactorIO__/graphics/icons/" .. variant .. ".png"
 		local entity = createDerivative(data.raw["constant-combinator"]["constant-combinator"], {

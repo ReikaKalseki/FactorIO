@@ -3,7 +3,7 @@ require "functions"
 
 ---@return {int: CombinatorEntry}
 local function getCombinatorStorage()
-	return storage.signals
+	return storage.signals.combinators
 end
 
 function initGlobal(markDirty)
@@ -31,17 +31,19 @@ script.on_init(function()
 end)
 
 ---@param entry CombinatorEntry
+---@param tick int
 ---@return boolean
-function shouldTick(entry)
+function shouldTick(entry, tick)
+	if not entry.tick_rate then fmterror("Stored nil tick rate for combinator %s > %s", entry.entity.name, entry.id) end
 	--game.print("Checking " .. entry.id .. " @ " .. entry.tick_rate .. " + " .. entry.tick_offset .. " #" .. (game.tick%entry.tick_rate))
-	return entry and game.tick%entry.tick_rate == entry.tick_offset
+	return entry and tick%entry.tick_rate == entry.tick_offset
 end
 
 script.on_event(defines.events.on_tick, function(event)
 	if event.tick%maximumTickRate == 0 then
 		local signals = getCombinatorStorage()
 		for unit,entry in pairs(signals) do
-			if shouldTick(entry) then
+			if shouldTick(entry, event.tick) then
 				if not tickCombinator(entry, event.tick) then
 					signals[unit] = nil
 				end
@@ -60,9 +62,10 @@ end
 ---@param entity LuaEntity
 local function onEntityAdded(entity)
 	if entity.type == "constant-combinator" then
-		local id = string.sub(entity.name, 12)
-		if _ENV["FIO-COMBINATORS"][id] then
+		local id = string.sub(entity.name, 12) --trim leading "combinator-"
+		if COMBINATORS[id] then
 			local rate = getTickRate(id)
+			if not rate then fmterror("Got nil tick rate for combinator %s > %s", entity.name, id) end
 			local ramp = getRampRate(id)
 			local offset = maximumTickRate*math.random(0, math.floor(rate/maximumTickRate)-1)
 			local entry = {entity = entity, id = id, tick_rate = rate, tick_offset = offset}

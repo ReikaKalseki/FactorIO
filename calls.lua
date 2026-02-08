@@ -1,7 +1,7 @@
 ---AVOID FUNCTION NAME CONFLICTS, WHICH WILL CONFUSE THE DECLARATIONS IN COMBINATORS
 ---ALSO IF ANY CALLS OR THEIR NAMES CHANGE, GAME NEEDS RESTART THEN COMBINATORS NEED TO BE BROKEN AND REPLACED
 
---require "__DragonIndustries__.boxes"
+require "__DragonIndustries__.boxes"
 
 ---@param entity LuaEntity
 ---@param data table
@@ -177,7 +177,8 @@ function getNearEnemies(entity) --stagger calls to this one
 			table.insert(forces, game.forces["biter_faction_" .. i])
 		end
 	end
-	return entity.surface.count_entities_filtered({type = "unit", area = {{entity.position.x-24, entity.position.y-24}, {entity.position.x+24, entity.position.y+24}}, force = forces})
+	--game.print(entity.name .. ": " .. serpent.block(entity.position) .. " @ " .. entity.surface.name .. " w " .. serpent.block(forces))
+	return entity.surface.count_entities_filtered({type = "unit", position = entity.position, radius = 32, force = forces})
 end
 
 ---@param entity LuaEntity
