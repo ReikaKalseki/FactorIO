@@ -13,7 +13,7 @@ require "__DragonIndustries__.entities"
 ---@field emptySignal {string: int}
 
 ---@class (exact) CombinatorConnection
----@field wire defines.wire_type
+---@field wire LuaWireConnector
 ---@field entity LuaEntity
 
 ---@class (exact) CombinatorEntry
@@ -27,7 +27,7 @@ require "__DragonIndustries__.entities"
 ---@field connection? CombinatorConnection
 
 ---@type {string: CombinatorTypeDef}
-local COMBINATORS = {}
+COMBINATORS = {}
 
 maximumTickRate = 9999999
 
@@ -76,65 +76,35 @@ end
 ---@param id string
 ---@return number
 function getTickRate(id)
-	return tickRates[id]
+	return COMBINATORS[id].tickRate
 end
 
 ---@param id string
 ---@return number
 function getRampRate(id)
-	return ramps[id]
-end
-
----@param id string
----@param entity LuaEntity
----@param wire defines.wire_type
----@param connection LuaEntity
----@return boolean
-local function testIfEntityIsConnected(id, entity, wire, connection)
-	local net = entity.circuit_connected_entities
-	local clr = wire == defines.wire_type.red and "red" or "green"
-	local data = net[clr]
-	if data then
-		for _,val in pairs(data) do
-			if val == connection then
-				return true
-			end
-		end
-	end
-	return false
-end
-
-local function testIfEntityIsStillConnected(entry)
-	return testIfEntityIsConnected(entry.id, entry.entity, entry.wire, entry.connection)
+	return COMBINATORS[id].rampRate
 end
 
 ---@param entry CombinatorEntry
----@param wire defines.wire_type
 ---@return boolean
-local function tryFindConnectionOn(entry, wire)
-	local connectValid = COMBINATORS[entry.id].validation
-	if not connectValid then return end
-	local net = entry.entity.circuit_connected_entities
-	local clr = wire == defines.wire_type.red and "red" or "green"
-	local data = net[clr]
-	if data then
-		for _,val in pairs(data) do
-			if connectValid and connectValid(val) then
-				--game.print("Found " .. val.name)
-				entry.connection = {entity = val, wire = wire}
-				return true
-			end
-		end
-	end
-	return false
+local function testIfEntityIsStillConnected(entry)
+	if not entry.connection then return false end
+	return testIfEntityIsConnectedToWire(entry.connection.wire, entry.connection.entity)
 end
 
 ---@param entry CombinatorEntry
 local function tryFindConnection(entry)
-	local first = (entry.connection and entry.connection.wire) and entry.connection.wire or defines.wire_type.red
-	local second = first == defines.wire_type.red and defines.wire_type.green or defines.wire_type.red
-	if tryFindConnectionOn(entry, first) then return end
-	tryFindConnectionOn(entry, second)
+	local connectValid = COMBINATORS[entry.id].validation
+	if not connectValid then return false end
+	forEachWireConnection(entry.entity, function(conn, point)
+		if connectValid and connectValid(conn.target) then
+			--game.print("Found " .. val.name)
+			entry.connection = {entity = conn.target, wire = point}
+			return true
+		else
+			return false
+		end
+	end)
 end
 
 ---@param entry CombinatorEntry

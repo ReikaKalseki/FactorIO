@@ -1,48 +1,18 @@
 ---AVOID FUNCTION NAME CONFLICTS, WHICH WILL CONFUSE THE DECLARATIONS IN COMBINATORS
 ---ALSO IF ANY CALLS OR THEIR NAMES CHANGE, GAME NEEDS RESTART THEN COMBINATORS NEED TO BE BROKEN AND REPLACED
 
-local function moveBox(area, dx, dy)
-	--printTable(area)
-	area.left_top.x = area.left_top.x+dx
-	area.left_top.y = area.left_top.y+dy
-	area.right_bottom.x = area.right_bottom.x+dx
-	area.right_bottom.y = area.right_bottom.y+dy
-	return area
-end
+--require "__DragonIndustries__.boxes"
 
-local function moveBoxDirection(area, dir, dist)
-	if dir == defines.direction.north then
-		area = moveBox(area, 0, dist)
-	end
-	if dir == defines.direction.south then
-		area = moveBox(area, 0, -dist)
-	end
-	if dir == defines.direction.east then
-		area = moveBox(area, -dist, 0)
-	end
-	if dir == defines.direction.west then
-		area = moveBox(area, dist, 0)
-	end
-	return area
-end
-
-local function getBox(entity)
-	return moveBox(entity.prototype.collision_box, entity.position.x, entity.position.y)	
-end
-
-local function getFacingEntity(entity, types)
-	local box = getBox(entity)
-	box = moveBoxDirection(box, entity.direction, 1)
-	local seek = {area = box, force = entity.force, limit = 1}
-	if types then seek.type = types end
-	--game.print(serpent.block(seek))
-	return entity.surface.find_entities_filtered(seek)
-end
-
+---@param entity LuaEntity
+---@param data table
+---@param connection LuaEntity
+---@return int
 function checkSignalDuration(entity, data, connection)
 	return 0
 end
 
+---@param train LuaTrain
+---@return {string:int}
 local function countTrainSize(train)
 	local ret = {locomotivesFront = 0, locomotivesBack = 0, wagons = 0, fluidWagons = 0}
 	if not train then return ret end
@@ -69,12 +39,14 @@ function trainSize(entity, data, connection)
 	}
 end
 
+---@param train LuaTrain
+---@return {string:int}
 local function countTrainTotals(train)
 	local ret = {items = 0, fluids = 0}
 	if not train then return ret end
 	for _,wagon in pairs(train.cargo_wagons) do
-		local inv = wagon.get_inventory(defines.inventory.cargo_wagon);
-		ret.items = ret.items+inv.get_item_count()
+		local inv = wagon.get_inventory(defines.inventory.cargo_wagon)
+		if inv then ret.items = ret.items+inv.get_item_count() end
 	end
 	for _,wagon in pairs(train.fluid_wagons) do
 		local fb = wagon.fluidbox[1]
@@ -99,6 +71,8 @@ function trainTotals(entity, data, connection)
 	}
 end
 
+---@param wagon LuaEntity
+---@return boolean
 local function isFull(wagon)
 	local inv = wagon.get_inventory(defines.inventory.cargo_wagon)
 	local filter = inv.get_filter(1)
@@ -106,10 +80,14 @@ local function isFull(wagon)
 	return not inv.can_insert({name=item, count=1})
 end
 
+---@param wagon LuaEntity
+---@return boolean
 local function isEmpty(wagon)
 	return wagon.get_inventory(defines.inventory.cargo_wagon).is_empty()
 end
 
+---@param train LuaTrain
+---@return boolean
 local function isTrainEmpty(train)
 	for _,wagon in pairs(train.carriages) do
 		if wagon.type == "cargo-wagon" then
@@ -121,6 +99,8 @@ local function isTrainEmpty(train)
 	return true
 end
 
+---@param train LuaTrain
+---@return boolean
 local function isTrainFull(train)
 	for _,wagon in pairs(train.carriages) do
 		if wagon.type == "cargo-wagon" then

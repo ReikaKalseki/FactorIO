@@ -17,7 +17,7 @@ addMultiCombinator("train-size", {"train-locos-front", "train-locos-back", "trai
 addMultiCombinator("train-totals", {"train-total-items", "train-total-fluid"}, trainTotals, isTrainStop, 30)
 --addCombinatorWithInput("signal-duration", 1, checkSignalDuration, nil, 15)
 
-addCombinator("inserter-filter", setInserterFilter, nil--[[isInserterOrLoader--]], 30, nil, true)
-addCombinator("belt-rotator", setBeltDirection, nil--[[isInserterOrLoader--]], 15, nil, true)
+--addCombinator("inserter-filter", setInserterFilter, nil--[[isInserterOrLoader--]], 30, nil, true)
+--addCombinator("belt-rotator", setBeltDirection, nil--[[isInserterOrLoader--]], 15, nil, true)
 
 fmtlog("Registered combinators; maximum tick rate is " .. maximumTickRate)
